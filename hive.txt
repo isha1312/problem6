@@ -1,0 +1,251 @@
+add jar file:///usr/local/HBase/lib/zookeeper-3.4.6.jar;
+add jar file:///usr/local/HBase/lib/guava-12.0.1.jar;
+add jar file:///usr/local/HBase/lib/hbase-client-1.2.6.jar;
+add jar file:///usr/local/HBase/lib/hbase-common-1.2.6.jar;
+add jar file:///usr/local/HBase/lib/hbase-protocol-1.2.6.jar;
+add jar file:///usr/local/HBase/lib/hbase-server-1.2.6.jar;
+add jar file:///usr/local/HBase/lib/hbase-shell-1.2.6.jar;
+add jar file:///usr/local/HBase/lib/hbase-thrift-1.2.6.jar;
+add jar file:///usr/local/hive/lib/hive-hbase-handler-2.2.0.jar;
+Set the values of variables in Hive
+set hbase.zookeeprt.quorum=localhost;
+set hive.metastore.client.setugi=true;
+set hive.exec.stagingdir=/tmp/.hivestage;
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.auto.convert.join=false;
+set hive.hbase.wal.enabled=false;
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+SET hive.exec.max.dynamic.partitions = 10000;
+SET hive.exec.max.dynamic.partitions.pernode = 1000;
+
+# Create the external table emp using hive
+hive>create external table empdata2 ( ename string, esal int)
+row format delimited fields terminated by "," stored as textfile location
+"/home/hduser/Desktop/empdata2";
+hive>load data local inpath '/home/hduser/Desktop/empdb.txt' into table empdata2;
+#Create External Table in hive referring to hbase table
+# create hbase table emphive first
+hbase(main):003:0> create 'emphive', 'cf'
+0 row(s) in 4.6260 seconds
+#create hive external table
+CREATE external TABLE hive_table_emp(id int, name string, esal string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:name,cf:esal")
+TBLPROPERTIES ("hbase.table.name" = "emphive");
+
+# load data into hive_table_emp
+(Hive doesn’t allow directly inserting data into external hive table)
+#for that create one hive table(managed table in hive)
+Managed table and External table in Hive. There are two types of tables in Hive ,one is Managed
+table and second is external table. the difference is , when you drop a table, if it is managed table
+hive deletes both data and meta data,if it is external table Hive only deletes metadata.
+hive>create table empdbnew(eno int, ename string, esal int) row format delimited fields terminated
+by ',' stored as textfile;
+#load data in managed table
+hive>load data local inpath '/home/hduser/Desktop/empdbnew.txt' into table empdbnew;
+#Load data in external table from managed table.
+hive>INSERT INTO hive_table_emp select * from empdbnew;
+hive> select * from hive_table_emp;
+OK
+1 deepali120000
+2 mahesh 30000
+3 mangesh 25000
+4 ram 39000
+5 brijesh 40000
+6 john 300000
+Time taken: 0.52 seconds, Fetched: 6 row(s)
+#display records where salary is greater than 40000
+hive> select * from hive_table_emp where esal>40000;
+OK
+1 deepali120000
+6 john 300000
+Time taken: 0.546 seconds, Fetched: 2 row(s)
+
+#Check hbase for updates(The records are available in associated Hbase table)
+hbase(main):008:0> scan 'emphive'
+ROW COLUMN+CELL
+1 column=cf:esal, timestamp=1522212425665, value=120000
+1 column=cf:name, timestamp=1522212425665, value=deepali
+2 column=cf:esal, timestamp=1522212425665, value=30000
+2 column=cf:name, timestamp=1522212425665, value=mahesh
+3 column=cf:esal, timestamp=1522212425665, value=25000
+3 column=cf:name, timestamp=1522212425665, value=mangesh
+4 column=cf:esal, timestamp=1522212425665, value=39000
+4 column=cf:name, timestamp=1522212425665, value=ram
+5 column=cf:esal, timestamp=1522212425665, value=40000
+5 column=cf:name, timestamp=1522212425665, value=brijesh
+6 column=cf:esal, timestamp=1522212425665, value=300000
+6 column=cf:name, timestamp=1522212425665, value=john
+
+6 row(s) in 0.0700 seconds
+
+# Creating external table in Hive referring to Hbase
+#referring to flight table created in Hbase
+CREATE external TABLE hbase_flight_new(fno int, fsource string,fdest string,fsh_at string,fsh_dt string,fsch_delay
+string,delay int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" =
+":key,finfo:source,finfo:dest,fsch:at,fsch:dt,fsch:delay,delay:dl")
+TBLPROPERTIES ("hbase.table.name" = "flight");
+hive> CREATE external TABLE hbase_flight_new(fno int, fsource string,fdest string,fsh_at string,fsh_dt
+string,fsch_delay string,delay int)
+> STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+> WITH SERDEPROPERTIES ("hbase.columns.mapping"
+=":key,finfo:source,finfo:dest,fsch:at,fsch:dt,fsch:delay,delay:dl")
+> TBLPROPERTIES ("hbase.table.name" = "flight");
+OK
+Time taken: 0.361 seconds
+#table created in hive
+hive> show tables;
+OK
+abc
+ddl_hive
+emp
+empdata
+empdata1
+empdata2
+empdbnew
+hbase_flight
+hbase_flight1
+hbase_flight_new
+hbase_table_1
+hive_table_emp
+Time taken: 0.036 seconds, Fetched: 12 row(s)
+# Display records from that table
+hive> select * from hbase_flight_new;
+OK
+1 pune mumbai 10.25a.m. 11.25 a.m. 5min 10
+2 pune kolkata7.00a.m. 7.30a.m. 2 min 4
+3 mumbai pune 12.30p.m. 12.45p.m. 1 min 5
+4 mumbai delhi 2.00p.m. 2.45p.m. 10 min 16
+Time taken: 0.581 seconds, Fetched: 4 row(s)
+e) Find the average departure delay per day in 2008.
+#calculate average delay
+hive> select sum(delay) from hbase_flight_new;
+
+WARNING: Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions.
+Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+Query ID = hduser_20180328130004_47384e9a-7490-4dfb-809d-ae240507bfab
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 1
+In order to change the average load for a reducer (in bytes):
+set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+set mapreduce.job.reduces=<number>
+Starting Job = job_1522208646737_0003, Tracking URL =
+http://localhost:8088/proxy/application_1522208646737_0003/
+Kill Command = /usr/local/hadoop/bin/hadoop job -kill job_1522208646737_0003
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2018-03-28 13:00:20,256 Stage-1 map = 0%, reduce = 0%
+2018-03-28 13:00:28,747 Stage-1 map = 100%, reduce = 0%, Cumulative CPU 3.68 sec
+2018-03-28 13:00:35,101 Stage-1 map = 100%, reduce = 100%, Cumulative CPU 6.26 sec
+MapReduce Total cumulative CPU time: 6 seconds 260 msec
+Ended Job = job_1522208646737_0003
+MapReduce Jobs Launched:
+Stage-Stage-1: Map: 1 Reduce: 1 Cumulative CPU: 6.26 sec HDFS Read: 9095 HDFS Write:
+102 SUCCESS
+Total MapReduce CPU Time Spent: 6 seconds 260 msec
+OK
+35
+Time taken: 31.866 seconds, Fetched: 1 row(s)
+hive>
+d) Create index on Flight information Table
+#create index on hbase_flight_new
+CREATE INDEX hbasefltnew_index
+ON TABLE hbase_flight_new (delay)
+AS 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler'
+WITH DEFERRED REBUILD;
+SHOW INDEX ON hbase_flight_new;
+#create index on table hbase_flight_new
+hive> CREATE INDEX hbasefltnew_index
+> ON TABLE hbase_flight_new (delay)
+> AS 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler'
+> WITH DEFERRED REBUILD;
+OK
+Time taken: 0.74 seconds
+
+#show index on table hbase_flight_new
+hive> SHOW INDEX ON hbase_flight_new;
+OK
+hbasefltnew_index hbase_flight_new delay
+default hbase_flight_new_hbasefltnew_index
+Time taken: 0.104 seconds, Fetched: 1 row(s)
+
+compact
+
+#join two tables in Hive
+#create table B for join
+hive> create table empinfo(empno int, empgrade string) row format delimited fields terminated by
+',' stored as textfile;
+#Load Data into table
+hive> load data local inpath '/home/hduser/Desktop/empinfo.txt' into table empinfo;
+Loading data to table default.empinfo
+OK
+Time taken: 0.552 seconds
+#insert data into the table
+hive> load data local inpath '/home/hduser/Desktop/empinfo.txt' into table empinfo;
+# Table A empdbnew
+hive> select * from empdbnew;
+OK
+1 deepali120000
+2 mahesh 30000
+3 mangesh 25000
+4 ram 39000
+5 brijesh 40000
+6 john 300000
+Time taken: 0.258 seconds, Fetched: 6 row(s)
+# Table B empinfo
+hive> select * from empinfo;
+OK
+1 A
+2 B
+3 B
+4 B
+5 B
+6 A
+Time taken: 0.207 seconds, Fetched: 6 row(s)
+#Join two tables(empdbnew with empinfo on empno)
+hive> SELECT eno, ename, empno, empgrade FROM empdbnew JOIN empinfo ON eno = empno;
+
+#Join==> Result
+
+hive> SELECT eno, ename, empno, empgrade
+> FROM empdbnew JOIN empinfo ON eno = empno;
+WARNING: Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions.
+Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+Query ID = hduser_20180328153258_bc345f46-a1f1-4589-ac5e-4c463834731a
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+set mapreduce.job.reduces=<number>
+Starting Job = job_1522208646737_0005, Tracking URL =
+http://localhost:8088/proxy/application_1522208646737_0005/
+Kill Command = /usr/local/hadoop/bin/hadoop job -kill job_1522208646737_0005
+Hadoop job information for Stage-1: number of mappers: 2; number of reducers: 1
+2018-03-28 15:33:09,615 Stage-1 map = 0%, reduce = 0%
+2018-03-28 15:33:18,231 Stage-1 map = 100%, reduce = 0%, Cumulative CPU 8.17 sec
+2018-03-28 15:33:24,476 Stage-1 map = 100%, reduce = 100%, Cumulative CPU 10.61 sec
+MapReduce Total cumulative CPU time: 10 seconds 610 msec
+Ended Job = job_1522208646737_0005
+MapReduce Jobs Launched:
+Stage-Stage-1: Map: 2 Reduce: 1 Cumulative CPU: 10.61 sec HDFS Read: 15336 HDFS Write:
+235 SUCCESS
+Total MapReduce CPU Time Spent: 10 seconds 610 msec
+OK
+1 deepali1 A
+2 mahesh 2 B
+3 mangesh 3 B
+4 ram 4 B
+5 brijesh 5 B
+6 john 6 A
+Time taken: 26.915 seconds, Fetched: 6 row(s)

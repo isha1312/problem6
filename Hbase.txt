@@ -1,0 +1,232 @@
+[cloudera@quickstart ~]$ sudo service hbase-master start
+starting master, logging to /var/log/hbase/hbase-hbase-master-quickstart.cloudera.out
+Started HBase master daemon (hbase-master):                [  OK  ]
+[cloudera@quickstart ~]$ sudo hbase-regionserver start
+sudo: hbase-regionserver: command not found
+[cloudera@quickstart ~]$ sudo service hbase-regionserver start
+Starting Hadoop HBase regionserver daemon: starting regionserver, logging to /var/log/hbase/hbase-hbase-regionserver-quickstart.cloudera.out
+hbase-regionserver.
+[cloudera@quickstart ~]$ hbase shell
+2022-05-15 06:16:32,682 INFO  [main] Configuration.deprecation: hadoop.native.lib is deprecated. Instead, use io.native.lib.available
+HBase Shell; enter 'help<RETURN>' for list of supported commands.
+Type "exit<RETURN>" to leave the HBase Shell
+Version 1.0.0-cdh5.4.2, rUnknown, Tue May 19 17:07:29 PDT 2015
+
+hbase(main):001:0> create 'flight','finfo','fsch'
+0 row(s) in 1.2710 seconds
+
+=> Hbase::Table - flight
+hbase(main):002:0> list
+TABLE                                                                           
+flight                                                                          
+1 row(s) in 0.0390 seconds
+
+=> ["flight"]
+hbase(main):003:0> put 'flight',1,'finfo:source','pune'
+0 row(s) in 0.2990 seconds
+
+hbase(main):004:0> put 'flight',1,'finfo:dest','mumbai'
+0 row(s) in 0.0130 seconds
+
+hbase(main):005:0> put 'flight',1,'fsch:at','10.25a.m.'
+0 row(s) in 0.0190 seconds
+
+hbase(main):006:0> put 'flight',1,'fsch:dt','11.25 a.m.'
+0 row(s) in 0.0110 seconds
+
+hbase(main):007:0> put 'flight',1,'fsch:delay','5min'
+0 row(s) in 0.0090 seconds
+
+hbase(main):008:0> put 'flight',2,'finfo:source','pune'
+0 row(s) in 0.0090 seconds
+
+hbase(main):009:0> put 'flight',2,'finfo:dest','kolkata'
+0 row(s) in 0.0100 seconds
+
+hbase(main):010:0> put 'flight',2,'fsch:at','7.00a.m.'
+0 row(s) in 0.0230 seconds
+
+hbase(main):011:0> put 'flight',2,'fsch:dt','7.30a.m.'
+0 row(s) in 0.0110 seconds
+
+hbase(main):012:0> put 'flight',2,'fsch:delay','2 min'
+0 row(s) in 0.0090 seconds
+
+hbase(main):013:0> put 'flight',3,'finfo:source','mumbai'
+0 row(s) in 0.0100 seconds
+
+hbase(main):014:0> put 'flight',3,'finfo:dest','pune'
+0 row(s) in 0.0100 seconds
+
+hbase(main):015:0> put 'flight',3,'fsch:at','12.30p.m.'
+0 row(s) in 0.0100 seconds
+
+hbase(main):016:0> put 'flight',3,'fsch:dt','12.45p.m.'
+0 row(s) in 0.0110 seconds
+
+hbase(main):017:0> put 'flight',3,'fsch:delay','1 min'
+0 row(s) in 0.0100 seconds
+
+hbase(main):018:0> put 'flight',4,'finfo:source','mumbai'
+0 row(s) in 0.0310 seconds
+
+hbase(main):019:0> put 'flight',4,'finfo:dest','delhi'
+0 row(s) in 0.0100 seconds
+
+hbase(main):020:0> put 'flight',4,'fsch:at','2.00p.m.'
+0 row(s) in 0.0100 seconds
+
+hbase(main):021:0> put 'flight',4,'fsch:dt','2.45p.m.'
+0 row(s) in 0.0110 seconds
+
+hbase(main):022:0> put 'flight',4,'fsch:delay','10 min'
+0 row(s) in 0.0120 seconds
+
+hbase(main):023:0> scan 'flight'
+ROW                   COLUMN+CELL                                               
+ 1                    column=finfo:dest, timestamp=1652621108650, value=mumbai  
+ 1                    column=finfo:source, timestamp=1652621091419, value=pune  
+ 1                    column=fsch:at, timestamp=1652621124988, value=10.25a.m.  
+ 1                    column=fsch:delay, timestamp=1652621165431, value=5min    
+ 1                    column=fsch:dt, timestamp=1652621150716, value=11.25 a.m. 
+ 2                    column=finfo:dest, timestamp=1652621202556, value=kolkata 
+ 2                    column=finfo:source, timestamp=1652621186337, value=pune  
+ 2                    column=fsch:at, timestamp=1652621225317, value=7.00a.m.   
+ 2                    column=fsch:delay, timestamp=1652621364626, value=2 min   
+ 2                    column=fsch:dt, timestamp=1652621341268, value=7.30a.m.   
+ 3                    column=finfo:dest, timestamp=1652621397200, value=pune    
+ 3                    column=finfo:source, timestamp=1652621384848, value=mumbai
+ 3                    column=fsch:at, timestamp=1652621439899, value=12.30p.m.  
+ 3                    column=fsch:delay, timestamp=1652621513817, value=1 min   
+ 3                    column=fsch:dt, timestamp=1652621479658, value=12.45p.m.  
+ 4                    column=finfo:dest, timestamp=1652621559957, value=delhi   
+ 4                    column=finfo:source, timestamp=1652621531572, value=mumbai
+ 4                    column=fsch:at, timestamp=1652621581495, value=2.00p.m.   
+ 4                    column=fsch:delay, timestamp=1652621699687, value=10 min  
+ 4                    column=fsch:dt, timestamp=1652621603047, value=2.45p.m.   
+4 row(s) in 0.0650 seconds
+
+hbase(main):024:0> alter 'flight',NAME=>'revenue'
+Updating all regions with the new schema...
+0/1 regions updated.
+1/1 regions updated.
+Done.
+0 row(s) in 2.2140 seconds
+
+hbase(main):025:0> scan 'flight'
+ROW                   COLUMN+CELL                                               
+ 1                    column=finfo:dest, timestamp=1652621108650, value=mumbai  
+ 1                    column=finfo:source, timestamp=1652621091419, value=pune  
+ 1                    column=fsch:at, timestamp=1652621124988, value=10.25a.m.  
+ 1                    column=fsch:delay, timestamp=1652621165431, value=5min    
+ 1                    column=fsch:dt, timestamp=1652621150716, value=11.25 a.m. 
+ 2                    column=finfo:dest, timestamp=1652621202556, value=kolkata 
+ 2                    column=finfo:source, timestamp=1652621186337, value=pune  
+ 2                    column=fsch:at, timestamp=1652621225317, value=7.00a.m.   
+ 2                    column=fsch:delay, timestamp=1652621364626, value=2 min   
+ 2                    column=fsch:dt, timestamp=1652621341268, value=7.30a.m.   
+ 3                    column=finfo:dest, timestamp=1652621397200, value=pune    
+ 3                    column=finfo:source, timestamp=1652621384848, value=mumbai
+ 3                    column=fsch:at, timestamp=1652621439899, value=12.30p.m.  
+ 3                    column=fsch:delay, timestamp=1652621513817, value=1 min   
+ 3                    column=fsch:dt, timestamp=1652621479658, value=12.45p.m.  
+ 4                    column=finfo:dest, timestamp=1652621559957, value=delhi   
+ 4                    column=finfo:source, timestamp=1652621531572, value=mumbai
+ 4                    column=fsch:at, timestamp=1652621581495, value=2.00p.m.   
+ 4                    column=fsch:delay, timestamp=1652621699687, value=10 min  
+ 4                    column=fsch:dt, timestamp=1652621603047, value=2.45p.m.   
+4 row(s) in 0.1020 seconds
+
+hbase(main):026:0> alter 'flight',NAME=>'revenue',METHOD=>'delete'
+Updating all regions with the new schema...
+0/1 regions updated.
+1/1 regions updated.
+Done.
+0 row(s) in 2.1980 seconds
+
+hbase(main):027:0> scan 'flight'
+ROW                   COLUMN+CELL                                               
+ 1                    column=finfo:dest, timestamp=1652621108650, value=mumbai  
+ 1                    column=finfo:source, timestamp=1652621091419, value=pune  
+ 1                    column=fsch:at, timestamp=1652621124988, value=10.25a.m.  
+ 1                    column=fsch:delay, timestamp=1652621165431, value=5min    
+ 1                    column=fsch:dt, timestamp=1652621150716, value=11.25 a.m. 
+ 2                    column=finfo:dest, timestamp=1652621202556, value=kolkata 
+ 2                    column=finfo:source, timestamp=1652621186337, value=pune  
+ 2                    column=fsch:at, timestamp=1652621225317, value=7.00a.m.   
+ 2                    column=fsch:delay, timestamp=1652621364626, value=2 min   
+ 2                    column=fsch:dt, timestamp=1652621341268, value=7.30a.m.   
+ 3                    column=finfo:dest, timestamp=1652621397200, value=pune    
+ 3                    column=finfo:source, timestamp=1652621384848, value=mumbai
+ 3                    column=fsch:at, timestamp=1652621439899, value=12.30p.m.  
+ 3                    column=fsch:delay, timestamp=1652621513817, value=1 min   
+ 3                    column=fsch:dt, timestamp=1652621479658, value=12.45p.m.  
+ 4                    column=finfo:dest, timestamp=1652621559957, value=delhi   
+ 4                    column=finfo:source, timestamp=1652621531572, value=mumbai
+ 4                    column=fsch:at, timestamp=1652621581495, value=2.00p.m.   
+ 4                    column=fsch:delay, timestamp=1652621699687, value=10 min  
+ 4                    column=fsch:dt, timestamp=1652621603047, value=2.45p.m.   
+4 row(s) in 0.0900 seconds
+
+hbase(main):028:0> create 'tb1','cf'
+0 row(s) in 0.4060 seconds
+
+=> Hbase::Table - tb1
+hbase(main):029:0> list
+TABLE                                                                           
+flight                                                                          
+tb1                                                                             
+2 row(s) in 0.0130 seconds
+
+=> ["flight", "tb1"]
+hbase(main):030:0> drop 'tb1'
+
+ERROR: Table tb1 is enabled. Disable it first.'
+
+Here is some help for this command:
+Drop the named table. Table must first be disabled:
+  hbase> drop 't1'
+  hbase> drop 'ns1:t1'
+
+
+hbase(main):031:0> disable 'tb1'
+0 row(s) in 1.2630 seconds
+
+hbase(main):032:0> drop 'tb1'
+0 row(s) in 0.2140 seconds
+
+hbase(main):033:0> list
+TABLE                                                                           
+flight                                                                          
+1 row(s) in 0.0090 seconds
+
+=> ["flight"]
+hbase(main):034:0> get 'flight',1
+COLUMN                CELL                                                      
+ finfo:dest           timestamp=1652621108650, value=mumbai                     
+ finfo:source         timestamp=1652621091419, value=pune                       
+ fsch:at              timestamp=1652621124988, value=10.25a.m.                  
+ fsch:delay           timestamp=1652621165431, value=5min                       
+ fsch:dt              timestamp=1652621150716, value=11.25 a.m.                 
+5 row(s) in 0.0210 seconds
+
+hbase(main):035:0> get 'flight','1',COLUMN=>'finfo:source'
+COLUMN                CELL                                                      
+ finfo:source         timestamp=1652621091419, value=pune                       
+1 row(s) in 0.0120 seconds
+
+hbase(main):036:0> get 'flight','1',COLUMN=>['finfo:source','finfo:dest']
+COLUMN                CELL                                                      
+ finfo:dest           timestamp=1652621108650, value=mumbai                     
+ finfo:source         timestamp=1652621091419, value=pune                       
+2 row(s) in 0.0150 seconds
+
+hbase(main):037:0> scan 'flight',COLUMNS=>'finfo:source'
+ROW                   COLUMN+CELL                                               
+ 1                    column=finfo:source, timestamp=1652621091419, value=pune  
+ 2                    column=finfo:source, timestamp=1652621186337, value=pune  
+ 3                    column=finfo:source, timestamp=1652621384848, value=mumbai
+ 4                    column=finfo:source, timestamp=1652621531572, value=mumbai
+4 row(s) in 0.0290 seconds
+
+hbase(main):038:0> 
